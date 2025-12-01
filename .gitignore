@@ -1,20 +1,71 @@
-# Virtual environment
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+python-env/
+# Virtual environments
 venv/
+env/
+ENV/
+.venv
 
 # Environment variables
 .env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+bdist.*/
+develop-eggs/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
 
 # Audio/temp files
+*.wav
+*.mp3
+*.m4a
 mic.wav
 temp.wav
 
 # Temporary/personal scripts or logs
 translation.txt
+transcription.txt
+*.log
 
 # Generated folder
-generated
-generated/mic.wav
-generated/temp.wav
+generated/
+generated/**/*
 
-## Cache folder
-__pycache__/
+# PyTorch/ML models cache
+.cache/
+models/
+
+# Test outputs
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Jupyter Notebooks
+.ipynb_checkpoints
+
+# Package distribution
+MANIFEST

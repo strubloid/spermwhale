@@ -1,0 +1,15 @@
+torch
+numpy
+ffmpeg-python
+tqdm
+more-itertools
+openai>=1.0.0
+numba
+typing-extensions>=4.10.0
+python-dotenv>=0.21.0
+webrtcvad
+pyaudio
+git+https://github.com/openai/whisper.git
+transformers
+sentencepiece
+faster-whisper

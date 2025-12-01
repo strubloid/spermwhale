@@ -1,10 +1,9 @@
 from packages.Config.ConfigObject import ConfigObject
+from packages.Config.ConfigUI import ConfigUI
 from packages.Microphone.MicrophoneObject import MicrophoneObject
 from packages.OpenAI.OpenAIObject import OpenAIObject
 from packages.Whisper.WhisperObject import WhisperObject
-from packages.Translator.TranslatorFacebook import TranslatorFacebook
-from packages.Translator.TranslatorHelsinki import TranslatorHelsinki
-from packages.Translator.TranslatorGPT import TranslatorGPT
+from packages.Translator.TranslatorFactory import TranslatorFactory
 from packages.Translator.Translator import Translator
 from packages.Log.LogObject import LogObject
 import os
@@ -14,10 +13,17 @@ import torch
 def main():
 
     try:
+        
+        ## Interactive configuration setup for missing values
+        LogObject.log("🚀 Starting Spermwhale Transcription System\n")
+        ConfigUI.check_and_prompt_missing_configs()
 
-        ## Loading the environment variables and returning an api_key
+        ## Loading the environment variables
         config = ConfigObject()
         config.checkingEnvironmentVariables()
+
+        ## Display current configuration
+        ConfigUI.display_current_config()
 
         ## starting the client
         openAiObject = OpenAIObject(config)
@@ -25,23 +31,23 @@ def main():
         ## loading the client of OpenAI
         client = openAiObject.setup(openAiObject.getKey())
         
-        ## Loading the whisper model and getting eh model
+        ## Loading the whisper model and getting the model
         whisperObject = WhisperObject(config)
         model = whisperObject.getModel()
-        print(f"🤖 Whisper")
+        print(f"🤖 Whisper Model: {config.getModelSize()}")
 
         ## Loading the microphone object
         mic = MicrophoneObject(config)
         print("🎤 Microphone")
 
-        ## Satrting the translator object
-        # translatorObject = TranslatorGPT(config)
-        translatorObject = TranslatorHelsinki(config)
+        ## Initialize translator using factory pattern
+        translator_engine = config.getTranslatorEngine()
+        translatorObject = TranslatorFactory.create_translator(translator_engine, config)
         
-        print(f"🌐 Translate to {translatorObject.getTargetLanguage()} ")
-        print(f"🗣️ CUDA: {torch.cuda.is_available()}")
+        print(f"🌐 Translator: {translator_engine.upper()} → {translatorObject.getTargetLanguage()}")
+        print(f"🗣️ CUDA Available: {torch.cuda.is_available()}")
 
-        LogObject.log("🎙️ Ready to listen. Speak into the microphone...")
+        LogObject.log("\n🎙️ Ready to listen. Speak into the microphone...\n")
 
         # Main loop: listen -> transcribe -> translate
         while True:
