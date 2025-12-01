@@ -1,3 +1,6 @@
+import warnings
+warnings.filterwarnings("ignore", category=UserWarning, module="webrtcvad")
+
 from packages.Config.ConfigObject import ConfigObject
 from packages.Config.ConfigUI import ConfigUI
 from packages.Microphone.MicrophoneObject import MicrophoneObject
@@ -70,15 +73,26 @@ def main():
 def processAudioCycle(mic, model, client, config, translatorObject : Translator):
     try:
         audio_path = mic.listenUntilSilence()
-        start_time = time.perf_counter()
-        # result = model.transcribe(audio_path, fp16=torch.cuda.is_available())
+        
+        # Detailed timing breakdown
+        total_start = time.perf_counter()
+        
+        # Transcription timing
+        transcribe_start = time.perf_counter()
         segments, info = model.transcribe(audio_path)
+        transcribe_time = time.perf_counter() - transcribe_start
+        
         transcribedText = "".join([segment.text for segment in segments])
-        # print(f"🗣️ Transcribed: {transcribedText}")
+        
+        # Translation timing
+        translate_time = 0
         if transcribedText:
+            translate_start = time.perf_counter()
             translatorObject.translate(transcribedText, client)
-
-        print(f"⏱️: {time.perf_counter() - start_time:.2f}s")
+            translate_time = time.perf_counter() - translate_start
+        
+        total_time = time.perf_counter() - total_start
+        print(f"⏱️ Total: {total_time:.2f}s (Transcribe: {transcribe_time:.2f}s | Translate: {translate_time:.2f}s)")
 
     except Exception as e:
         print(f"⚠️ Cycle failed: {e}")
