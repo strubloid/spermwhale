@@ -30,12 +30,14 @@ class TranslatorGPT(Translator):
         if self.config and hasattr(self.config, "getOutputFile"):
             open(self.config.getOutputFile(), "w").close()
 
-
-        prompt = f"Translate to {self.getTargetLanguage()}: {text}"
+        prompt = f"Translate the following text to {self.getTargetLanguage()}. Return ONLY the translation, nothing else:\n\n{text}"
 
         response = client.chat.completions.create(
             model=self.getTranslationModel(),
-            messages=[{"role": "user", "content": prompt}],
+            messages=[
+                {"role": "system", "content": f"You are a translator. Translate to {self.getTargetLanguage()}. Return ONLY the direct translation without explanations, alternatives, or context."},
+                {"role": "user", "content": text}
+            ],
             stream=True
         )
 

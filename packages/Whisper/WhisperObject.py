@@ -27,15 +27,23 @@ class WhisperObject:
         self.model = self.startingWhisperModel()
 
     ## This function loads the Whisper model and returns a model object.
-    # => It uses the whisper library to load the model specified by MODEL_SIZE.
-    # => If the model fails to load, it raises a RuntimeError with the error message.
-    # => The function also logs the loading process, indicating whether it was successful or not.
+    # => It uses faster-whisper for optimized performance
+    # => Configured for maximum speed with CPU optimization
     def startingWhisperModel(self):
 
         LogObject.log("🔄 Loading Whisper model...")
         try:
-            # model = whisper.load_model(self.modelSize)
-            model = WhisperModel("base", device="cuda" if torch.cuda.is_available() else "cpu")
+            # Use faster-whisper with optimized settings for speed
+            device = "cpu"  # Force CPU mode in WSL for stability
+            compute_type = "int8"  # Use int8 for fastest inference
+            
+            model = WhisperModel(
+                self.modelSize,
+                device=device,
+                compute_type=compute_type,
+                cpu_threads=4,  # Optimize CPU threads
+                num_workers=1
+            )
             LogObject.log("✅ Whisper model loaded.")
             return model
         

@@ -1,5 +1,24 @@
 import warnings
-warnings.filterwarnings("ignore", category=UserWarning, module="webrtcvad")
+import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
+# Suppress all ALSA/audio warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=DeprecationWarning)
+
+# Redirect ALSA errors to /dev/null
+import sys
+if sys.platform == 'linux':
+    try:
+        from ctypes import *
+        ERROR_HANDLER_FUNC = CFUNCTYPE(None, c_char_p, c_int, c_char_p, c_int, c_char_p)
+        def py_error_handler(filename, line, function, err, fmt):
+            pass
+        c_error_handler = ERROR_HANDLER_FUNC(py_error_handler)
+        asound = cdll.LoadLibrary('libasound.so.2')
+        asound.snd_lib_error_set_handler(c_error_handler)
+    except:
+        pass
 
 from packages.Config.ConfigObject import ConfigObject
 from packages.Config.ConfigUI import ConfigUI
@@ -18,15 +37,11 @@ def main():
     try:
         
         ## Interactive configuration setup for missing values
-        LogObject.log("🚀 Starting Spermwhale Transcription System\n")
         ConfigUI.check_and_prompt_missing_configs()
 
         ## Loading the environment variables
         config = ConfigObject()
         config.checkingEnvironmentVariables()
-
-        ## Display current configuration
-        ConfigUI.display_current_config()
 
         ## starting the client
         openAiObject = OpenAIObject(config)
@@ -37,20 +52,15 @@ def main():
         ## Loading the whisper model and getting the model
         whisperObject = WhisperObject(config)
         model = whisperObject.getModel()
-        print(f"🤖 Whisper Model: {config.getModelSize()}")
 
         ## Loading the microphone object
         mic = MicrophoneObject(config)
-        print("🎤 Microphone")
 
         ## Initialize translator using factory pattern
         translator_engine = config.getTranslatorEngine()
         translatorObject = TranslatorFactory.create_translator(translator_engine, config)
-        
-        print(f"🌐 Translator: {translator_engine.upper()} → {translatorObject.getTargetLanguage()}")
-        print(f"🗣️ CUDA Available: {torch.cuda.is_available()}")
 
-        LogObject.log("\n🎙️ Ready to listen. Speak into the microphone...\n")
+        print(f"\n🎙️ Ready [{config.getModelSize()}|{translator_engine}] ...\n")
 
         # Main loop: listen -> transcribe -> translate
         while True:
